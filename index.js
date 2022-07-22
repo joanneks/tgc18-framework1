@@ -10,13 +10,15 @@ app.use(express.static('public'));
 wax.on(hbs.handlebars);
 wax.setLayoutPath('./views/layouts');
 
-const landingRoutes = require('./routes/landing')
+const landingRoutes = require('./routes/landing');
+const productsRoutes = require('./routes/products')
 
 async function main (){
     // app.get('/',function(req,res){
     //     res.send("It's alive!")
     // })
     app.use('/',landingRoutes);
+    app.use('/products',productsRoutes);
 }
 main();
 
