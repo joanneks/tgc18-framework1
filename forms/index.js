@@ -1,10 +1,11 @@
-// require in coalan-forms
+// require in caolan-forms
 const forms = require('forms');
 // create some shortcuts
 const fields = forms.fields;
 const validators = forms.validators;
+const widgets = forms.widgets;
 
-var bootstrapField = function (name, object) {
+const bootstrapField = function (name, object) {
     if (!Array.isArray(object.widget.classes)) { object.widget.classes = []; }
 
     if (object.widget.classes.indexOf('form-control') === -1) {
@@ -24,23 +25,37 @@ var bootstrapField = function (name, object) {
     return '<div class="form-group">' + label + widget + error + '</div>';
 };
 
-const createProductForm =()=>{
+// this function will return an instance of the create product form
+const createProductForm = (categories, tags) => {
     // each key/value pair in the object represents one form control
-     return forms.create({
-        'name':fields.string({
-            required:true, // --> means compulsory to have a value
-            errorAfterField:true
+    return forms.create({
+        'name': fields.string({
+            required: true,
+            errorAfterField: true,
         }),
-        'cost':fields.string({
-            required:true,
-            errorAfterField:true,
-            validators:[validators.integer(), validators.min(0)]
+        'cost': fields.string({
+            required: true,
+            errorAfterField: true,
+            validators: [validators.integer(), validators.min(0)]
         }),
-        'description':fields.string({
-            required:true,
-            errorAfterField:true
+        'description': fields.string({
+            required: true,
+            errorAfterField: true
+        }),
+        'category_id': fields.string({
+            label: 'Category',
+            required: true,
+            errorAfterField: true,
+            choices: categories,
+            widget: widgets.select()
+        }),
+        'tags':fields.string({
+            required: true,
+            errorAfterField: true,
+            widget: widgets.multipleSelect(),
+            choices: tags
         })
-     })
+    })
 }
 
-module.exports = {createProductForm, bootstrapField}
+module.exports = { createProductForm, bootstrapField}
