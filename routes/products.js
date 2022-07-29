@@ -71,6 +71,7 @@ router.post('/create', async function (req, res) {
                 // for example: "1,3"
                 await product.tags().attach(form.data.tags.split(','))
             }
+            req.flash("success_messages",`New product ${product} as been created`)
             res.redirect('/products')
 
         },
@@ -173,7 +174,7 @@ router.post('/:product_id/update', async function (req, res) {
             // await products.tags.detach(existingTagIds);
             // await product.tags.attach(tagIds);
 
-       
+            req.flash("success_messages",`New product ${product} as been created`)
             res.redirect('/products')
         },
         'error': async function (form) {
