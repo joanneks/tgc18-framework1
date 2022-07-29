@@ -30,10 +30,10 @@ app.use(session({
 app.use(flash());
 
 //stup a middleware to inject the session data into hbs files
-app.use(function(req,res){
+app.use(function(req,res,next){
     // res.locals wil contain all the variables available to hbs files
-    res.locals.success.messages = req.flash('success messages');
-    res.locals.error.messages = req.flash('error messages');
+    res.locals.success_messages = req.flash('success_messages');
+    res.locals.error_messages = req.flash('error_messages');
     next();
 })
 
