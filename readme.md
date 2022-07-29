@@ -89,3 +89,25 @@ FLUSH PRIVILEGES;
 -->
 
 <!-- addition FYI. package-lock.json is same as yarn.lock. This is meant to rmb the version of dependencies installed then -->
+
+
+
+<!-- 
+npm install session
+npm install connect-flash
+npm install express-session
+npm install session-file-store
+
+.gitignore sessions
+
+const session = require('express-session');
+const flash = require("connect-flash");
+const FileStore = require('session-file-store')(session);
+// set up flash
+app.use(session({
+    store: new FileStore(), // use new file to store session
+    secret: 'keyboard-cat', // used to generate session id
+    resave: false, // do we automatically recreate the session even if there is no change to it
+    saveUninitialized: true // if a new broswer connects, do we create a new session
+})) 
+-->
