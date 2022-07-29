@@ -30,7 +30,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.deleteTable('categories')
+  return db.dropTable('categories')
 };
 
 exports._meta = {

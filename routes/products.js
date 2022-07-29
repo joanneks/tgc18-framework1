@@ -3,7 +3,8 @@ const router = express.Router();
 
 // import in the Product model
 const { Product, Category, Tag } = require('../models')
-const { createProductForm, bootstrapField } = require('../forms')
+const { createProductForm, bootstrapField } = require('../forms');
+const { checkIfAuthenticated } = require('../middlewares');
 
 router.get('/', async function (req, res) {
     // fetch all the products
@@ -17,7 +18,7 @@ router.get('/', async function (req, res) {
     })
 })
 
-router.get('/create', async function (req, res) {
+router.get('/create', checkIfAuthenticated, async function (req, res) {
 
     // fetch all the categories in the system
     const categories = await Category.fetchAll().map(category => {
@@ -42,7 +43,7 @@ router.get('/create', async function (req, res) {
     })
 })
 
-router.post('/create', async function (req, res) {
+router.post('/create', checkIfAuthenticated, async function (req, res) {
     // fetch all the categories in the system
     const categories = await Category.fetchAll().map(category => {
         return [category.get('id'), category.get('name')]
@@ -71,8 +72,10 @@ router.post('/create', async function (req, res) {
                 // for example: "1,3"
                 await product.tags().attach(form.data.tags.split(','))
             }
-            req.flash("success_messages",`New product ${product} as been created`)
+            // req.flash is available because we did a app.use(flash()) inside index.js
+            req.flash("success_messages", `New product ${product.get('name')} has been created`)
             res.redirect('/products')
+
 
         },
         'error': function (form) {
@@ -158,13 +161,13 @@ router.post('/:product_id/update', async function (req, res) {
             // must be a column name in the table
 
             // get all the selected tags as an array
-            let tagIds = tags.split(',')
+            let tagIds = tags.split(',').map( id => parseInt(id));
             // get an array that contains the ids of the existing tags
             let existingTagIds = await product.related('tags').pluck('id');
- 
+
             // remove all the current tags that are not selected anymore
             let toRemove = existingTagIds.filter( id => tagIds.includes(id) === false)
-            console.log("toRemove=", toRemove);
+     
             await product.tags().detach(toRemove)
 
             // add in all the tags from the form that are not in the product
@@ -174,7 +177,7 @@ router.post('/:product_id/update', async function (req, res) {
             // await products.tags.detach(existingTagIds);
             // await product.tags.attach(tagIds);
 
-            req.flash("success_messages",`New product ${product} as been created`)
+       
             res.redirect('/products')
         },
         'error': async function (form) {
