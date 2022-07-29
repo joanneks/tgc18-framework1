@@ -13,7 +13,7 @@ const FileStore = require('session-file-store')(session);
 
 // csrf token
 const csrf = require('csurf');
-
+require('dotenv').config();
 const app = express();
 
 app.set('view engine', 'hbs');
@@ -70,11 +70,13 @@ app.use(function(req,res,next){
 const landingRoutes = require('./routes/landing');
 const productRoutes = require('./routes/products');
 const userRoutes = require('./routes/users')
+const cloudinaryRoutes = require ('./routes/cloudinary')
 
 // first arg is the prefix
 app.use('/', landingRoutes);
 app.use('/products', productRoutes);
 app.use('/users', userRoutes);
+app.use('/cloudinary',cloudinaryRoutes)
 
 app.listen(3000, function(){
     console.log("Server has started");
