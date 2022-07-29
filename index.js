@@ -11,8 +11,8 @@ const flash = require('connect-flash');
 // create a new session FileStore
 const FileStore = require('session-file-store')(session);
 
-// // csrf token
-// const csrf = require('csurf');
+// csrf token
+const csrf = require('csurf');
 
 const app = express();
 
@@ -44,16 +44,16 @@ app.use(function(req,res,next){
   next();
 })
 
-// app.use(csrf());
+app.use(csrf());
 
-// app.use(function(req,res,next){
+app.use(function(req,res,next){
 
-//   // the csrfToken function is avaliable because of `app.use(csrf())`
-//   res.locals.csrfToken = req.csrfToken(); 
-//   console.log(req.csrfToken());
-//   next();
+  // the csrfToken function is avaliable because of `app.use(csrf())`
+  res.locals.csrfToken = req.csrfToken(); 
+  console.log(req.csrfToken());
+  next();
 
-// })
+})
 
 // register Flash messages
 app.use(flash());  // VERY IMPORTANT: register flash after sessions
