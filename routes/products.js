@@ -3,18 +3,86 @@ const router = express.Router();
 
 // import in the Product model
 const { Product, Category, Tag } = require('../models')
-const { createProductForm, bootstrapField } = require('../forms');
+const { createProductForm, createSearchForm, bootstrapField } = require('../forms');
 const { checkIfAuthenticated } = require('../middlewares');
 
-router.get('/', async function (req, res) {
+router.get('/',async function (req, res) {
     // fetch all the products
     // use the bookshelf syntax 
     // => select * from products
-    let products = await Product.collection().fetch({
-        'withRelated':['category', 'tags']
+
+    // let products = await Product.collection().fetch({
+    //     'withRelated':['category', 'tags']
+    // });
+
+    // .collection() creates a query builder
+    let query = Product.collection();
+    // e.g query.where('category_id');
+    // query only executes when .fetch() / .fetchAll() is used.
+    // const products = await query.fetchAll()
+
+    const categories = await Category.fetchAll().map(category => {
+        return [category.get('id'), category.get('name')]
     });
-    res.render('products/index', {
-        products: products.toJSON()
+    categories.unshift([0, '--- Any Category ---']);
+
+    const tags = await Tag.fetchAll().map( t => {
+        return [t.get('id'), t.get('name')]
+    })
+
+    const searchForm = createSearchForm(categories,tags);
+    searchForm.handle(req,{
+        'success':async function(form){
+
+            // if user did provide the name
+            if(form.data.name){
+                query.where('name','like','%'+ form.data.name + '%')
+            }
+            if(form.data.min_cost){
+                query.where('cost','>=',form.data.min_cost)
+            }
+            if(form.data.max_cost){
+                query.where('cost','<=',form.data.max_cost)
+            }
+
+            if (form.data.category_id && form.data.category_id != "0") {
+                query.where('category_id', '=', form.data.category_id);
+            }
+            if(form.data.tags){
+                // this method looks for OR only
+                    // first arg : sql claus
+                    // second arg: which table to join
+                    // third arg: one of the keys
+                    // fourth arg: the key to join with
+                    // eqv select * from products join products_tags ON 
+                        // products.id=product_id
+                        // where tag_id(<selected tags ID>)
+                query.query('join','products_tags','products.id','product_id').where(
+                    'tag_id' , 'in', form.data.tags.split(',')
+                )
+            }
+            const products =await query.fetch({
+                withRelated:['tags','category']
+            })
+            
+            res.render('products/index', {
+                products: products.toJSON(),
+                form: form.toHTML(bootstrapField)
+            })
+        },
+        'empty':async function(){
+            const products =await query.fetch({
+                withRelated:['tags','category']
+            })
+            res.render('products/index', {
+                products: products.toJSON(),
+                form: searchForm.toHTML(bootstrapField)
+            })
+
+        },
+        'error': async function(){
+
+        }
     })
 })
 
@@ -120,6 +188,7 @@ router.get('/:product_id/update', async function (req, res) {
     productForm.fields.cost.value = product.get('cost');
     productForm.fields.description.value = product.get('description');
     productForm.fields.category_id.value = product.get('category_id');
+    productForm.fields.image_url.value = product.get('image_url');
 
     // fill in the multi-select for tags
     // product.related('tags') will return an array of tag objects
@@ -130,8 +199,10 @@ router.get('/:product_id/update', async function (req, res) {
 
     res.render('products/update', {
         'form': productForm.toHTML(bootstrapField),
-        'product': product.toJSON()
-
+        'product': product.toJSON(),
+        'cloudinaryName': process.env.CLOUDINARY_NAME,
+        'cloudinaryApiKey': process.env.CLOUDINARY_API_KEY,
+        'cloudinaryPreset': process.env.CLOUDINARY_UPLOAD_PRESET
     })
 })
 
@@ -157,6 +228,10 @@ router.post('/:product_id/update', async function (req, res) {
             // product.set('description', form.data.description);
             // product.set('cost', form.data.cost);
             // product.set('category_id, form.data.category_id);
+            // product.set('image_url, form.data.image_url);
+
+            // combination of destructuring and spreading. 
+            // form.data is split into tags and the rest goes into productData variable
             let { tags, ...productData} = form.data;
           
             product.set(productData);  // for the shortcut to work,
