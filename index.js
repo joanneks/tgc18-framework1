@@ -13,6 +13,8 @@ const FileStore = require('session-file-store')(session);
 
 // csrf token
 const csrf = require('csurf');
+
+
 require('dotenv').config();
 const app = express();
 
@@ -40,22 +42,26 @@ app.use(session({
 }))
 
 // enable csrf protection
+// app.use(csrf());
 
+// this is a proxy middleware
+const csrfInstance = csrf();
 app.use(function(req,res,next){
-  console.log("req.body ==>", req.body);
+  // console.log("Checking for csrf exclusion");
+  if (req.url === '/checkout/process_payment') {
+    next();
+  } else {
+    csrfInstance(req,res,next);
+  }
+})
+app.use(function(req,res,next){
+  if(req.csrfToken){
+    // the csrfToken function is avaliable because of `app.use(csrf())`
+    res.locals.csrfToken = req.csrfToken(); 
+  }
   next();
 })
 
-app.use(csrf());
-
-app.use(function(req,res,next){
-
-  // the csrfToken function is avaliable because of `app.use(csrf())`
-  res.locals.csrfToken = req.csrfToken(); 
-  console.log(req.csrfToken());
-  next();
-
-})
 
 // register Flash messages
 app.use(flash());  // VERY IMPORTANT: register flash after sessions
