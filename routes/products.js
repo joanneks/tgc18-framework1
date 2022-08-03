@@ -33,8 +33,12 @@ router.get('/',checkIfAuthenticated, async function (req, res) {
         'success':async function(form){
 
             // if user did provide the name
+            // if(form.data.name){
+            //     query.where('name','like','%'+ form.data.name + '%')
+            // }
+
             if(form.data.name){
-                query.where('name','like','%'+ form.data.name + '%')
+                query.where('name','ilike','%'+ form.data.name + '%')
             }
             if(form.data.min_cost){
                 query.where('cost','>=',form.data.min_cost)
