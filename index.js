@@ -5,6 +5,8 @@ const helpers = require('handlebars-helpers')({
     handlebars: hbs.handlebars
   });
 
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
 //requiring in the dependencies for sessions
 const session = require('express-session');
 const flash = require('connect-flash');
@@ -19,6 +21,9 @@ require('dotenv').config();
 const app = express();
 
 app.set('view engine', 'hbs');
+
+// enable cross-site origin resources sharing
+app.use(cors());
 
 app.use(express.urlencoded({
   extended: false
@@ -48,7 +53,7 @@ app.use(session({
 const csrfInstance = csrf();
 app.use(function(req,res,next){
   // console.log("Checking for csrf exclusion");
-  if (req.url === '/checkout/process_payment') {
+  if (req.url === '/checkout/process_payment' || req.url.slice(0,5) == '/api/') {
     next();
   } else {
     csrfInstance(req,res,next);
@@ -101,6 +106,11 @@ const cloudinaryRoutes = require ('./routes/cloudinary')
 const cartRoutes = require('./routes/carts');
 const { checkIfAuthenticated } = require('./middlewares');
 const checkoutRoutes = require('./routes/checkout');
+ 
+const api = {
+  products: require('./routes/api/products'),
+  users: require('./routes/api/users')
+}
 
 // first arg is the prefix
 app.use('/', landingRoutes);
@@ -109,6 +119,10 @@ app.use('/users', userRoutes);
 app.use('/cloudinary',cloudinaryRoutes)
 app.use('/cart', checkIfAuthenticated,cartRoutes);
 app.use('/checkout',checkoutRoutes);
+
+// register api routes
+app.use('/api/products', express.json(), api.products);
+app.use('/api/users',express.json(),api.users)
 
 app.listen(3000, function(){
     console.log("Server has started");

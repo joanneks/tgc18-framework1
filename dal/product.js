@@ -23,4 +23,11 @@ async function getProductById(productId){
     return product;
 }
 
-module.exports = {getAllCategories, getAllTags, getProductById}
+async function getAllProducts(){
+    return await Product.fetchAll({
+        withRelated:['tags','category']
+    })
+}
+
+
+module.exports = {getAllCategories, getAllTags, getProductById, getAllProducts}
