@@ -131,3 +131,17 @@ app.use('/api/users',express.json(),api.users)
 app.listen(process.env.PORT, function(){
   console.log("Server has started");
 })
+
+// ; DB_DRIVER=mysql
+// ; DB_USER=joanneks
+// ; DB_PASSWORD=Tech2022
+// ; DB_DATABASE=organic
+// ; DB_HOST=localhost
+
+// ; after deployment
+// ; The syntax is postgres://<user>:<password>@<host>/<database_name>?reconnect = true
+// ; postgres://foqhmvwpsduona:
+// ; 5b61d5f82c5311b37e6406d3e8b6b6b76a4f123a797f565cc2839452c91f3a3c
+// ; @ec2-52-204-157-26.compute-1.amazonaws.com
+// ; :5432/
+// ; df8co7ogskll5c
